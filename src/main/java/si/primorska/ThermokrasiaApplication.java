@@ -7,6 +7,9 @@ import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.jdbi.DBIHealthCheck;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import io.swagger.jaxrs.listing.ApiListingResource;
 import si.primorska.db.SampleDao;
 import si.primorska.db.TemperatureDao;
 import si.primorska.resources.SampleResource;
@@ -25,6 +28,12 @@ public class ThermokrasiaApplication extends Application<ThermokrasiaConfigurati
 
   @Override
   public void initialize(final Bootstrap<ThermokrasiaConfiguration> bootstrap) {
+    bootstrap.addBundle(new SwaggerBundle<ThermokrasiaConfiguration>() {
+      @Override
+      protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ThermokrasiaConfiguration configuration) {
+        return configuration.getSwaggerBundleConfiguration();
+      }
+    });
   }
 
   @Override
@@ -40,6 +49,7 @@ public class ThermokrasiaApplication extends Application<ThermokrasiaConfigurati
     final SampleResource sampleResource = new SampleResource(sampleDao);
     environment.jersey().register(temperatureResource);
     environment.jersey().register(sampleResource);
+    environment.jersey().register(new ApiListingResource());
 
     environment.healthChecks().register("mysql", new DBIHealthCheck(jdbi, configuration.getDataSourceFactory().getValidationQuery()));
   }

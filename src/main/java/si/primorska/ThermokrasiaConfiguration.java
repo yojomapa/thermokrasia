@@ -2,6 +2,7 @@ package si.primorska;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,6 +17,8 @@ public class ThermokrasiaConfiguration extends Configuration {
   @NotNull
   private DataSourceFactory database = new DataSourceFactory();
 
+  private SwaggerBundleConfiguration swaggerBundleConfiguration;
+
   @JsonProperty("database")
   public void setDataSourceFactory(DataSourceFactory factory) {
     this.database = factory;
@@ -24,5 +27,15 @@ public class ThermokrasiaConfiguration extends Configuration {
   @JsonProperty("database")
   public DataSourceFactory getDataSourceFactory() {
     return database;
+  }
+
+  @JsonProperty("swagger")
+  public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
+    return swaggerBundleConfiguration;
+  }
+
+  @JsonProperty("swagger")
+  public void setSwaggerBundleConfiguration(SwaggerBundleConfiguration swaggerBundleConfiguration) {
+    this.swaggerBundleConfiguration = swaggerBundleConfiguration;
   }
 }
