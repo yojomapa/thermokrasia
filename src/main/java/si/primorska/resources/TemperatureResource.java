@@ -6,21 +6,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import si.primorska.api.Temperature;
+import si.primorska.db.TemperatureDao;
 import si.primorska.service.TemperatureService;
 
 @Path("/temperature")
 public class TemperatureResource {
 
-  private TemperatureService temperatureService;
+  private TemperatureDao temperatureDao;
 
-  @Inject
-  public TemperatureResource(TemperatureService temperatureService) {
-    this.temperatureService = temperatureService;
+  public TemperatureResource(TemperatureDao temperatureDao) {
+    this.temperatureDao = temperatureDao;
   }
 
   @POST
   public Response save(Temperature temperature) {
-    temperatureService.save(temperature);
+    temperatureDao.insert(temperature);
     return Response.ok().build();
   }
 
