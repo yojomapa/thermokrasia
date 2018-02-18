@@ -1,7 +1,5 @@
 package si.primorska;
 
-import com.hubspot.dropwizard.guice.GuiceBundle;
-
 import org.skife.jdbi.v2.DBI;
 
 import io.dropwizard.Application;
@@ -11,41 +9,39 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import si.primorska.db.SampleDao;
 import si.primorska.db.TemperatureDao;
-import si.primorska.module.ThermokrasiaModule;
+import si.primorska.resources.SampleResource;
 import si.primorska.resources.TemperatureResource;
 
 public class ThermokrasiaApplication extends Application<ThermokrasiaConfiguration> {
 
-    private GuiceBundle<ThermokrasiaConfiguration> guiceBundle;
+  public static void main(final String[] args) throws Exception {
+    new ThermokrasiaApplication().run(args);
+  }
 
-    public static void main(final String[] args) throws Exception {
-        new ThermokrasiaApplication().run(args);
-    }
+  @Override
+  public String getName() {
+    return "Thermokrasia";
+  }
 
-    @Override
-    public String getName() {
-        return "Thermokrasia";
-    }
+  @Override
+  public void initialize(final Bootstrap<ThermokrasiaConfiguration> bootstrap) {
+  }
 
-    @Override
-    public void initialize(final Bootstrap<ThermokrasiaConfiguration> bootstrap) {
+  @Override
+  public void run(final ThermokrasiaConfiguration configuration,
+                  final Environment environment) {
 
-      guiceBundle = GuiceBundle.<ThermokrasiaConfiguration>newBuilder()
-          .addModule(new ThermokrasiaModule())
-          .setConfigClass(ThermokrasiaConfiguration.class)
-          .build();
+    final DBIFactory factory = new DBIFactory();
+    final DBI jdbi = factory.build(environment, configuration.getDataSourceFactory(), "mysql");
 
-      bootstrap.addBundle(guiceBundle);
-    }
+    final TemperatureDao temperatureDao = jdbi.onDemand(TemperatureDao.class);
+    final SampleDao sampleDao = jdbi.onDemand(SampleDao.class);
+    final TemperatureResource temperatureResource = new TemperatureResource(temperatureDao);
+    final SampleResource sampleResource = new SampleResource(sampleDao);
+    environment.jersey().register(temperatureResource);
+    environment.jersey().register(sampleResource);
 
-    @Override
-    public void run(final ThermokrasiaConfiguration configuration,
-                    final Environment environment) {
-
-        final DBIFactory factory = new DBIFactory();
-        final DBI jdbi = factory.build(environment, configuration.getDataSourceFactory(), "mysql");
-        environment.healthChecks().register("mysql", new DBIHealthCheck(jdbi, configuration.getDataSourceFactory().getValidationQuery()));
-        environment.jersey().register(TemperatureResource.class);
-    }
+    environment.healthChecks().register("mysql", new DBIHealthCheck(jdbi, configuration.getDataSourceFactory().getValidationQuery()));
+  }
 
 }
